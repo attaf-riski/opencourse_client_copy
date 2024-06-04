@@ -26,7 +26,7 @@ import Image from "next/image";
 import axios from "axios";
 import Http from "../../../helpers/Fetch";
 import AuthAttributes from "@/src/types/AuthUserInterface";
-import AuthUser from "@/src/helpers/AuthUser";
+import { SetAuth } from "@/src/helpers/AuthUser";
 
 // Definisikan skema validasi menggunakan zod
 const loginSchema = z.object({
@@ -49,8 +49,11 @@ export default function LoginCard() {
     formState: { errors },
   } = methods;
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: any) => {
     try {
+
+      console.log('disini')
+
       // email sama password disimpan
       const response = await Http.post("/api/login", data, {
         withCredentials: true,
@@ -59,6 +62,10 @@ export default function LoginCard() {
         },
       });
 
+      console.log(response)
+
+      console.log('sampe sini')
+
       const responseData: AuthAttributes = {
         id: response.data?.user?.id,
         full_name: response.data?.user?.full_name,
@@ -66,7 +73,13 @@ export default function LoginCard() {
         token: response.data?.token,
       };
 
-      AuthUser.SetAuth(responseData);
+      console.log('kesini yuuuk')
+
+      console.log(responseData)
+
+      await SetAuth(responseData) // tidak berjalan, krn async
+
+
       if (responseData.role === "admin") {
         router.push('/');
       } else if (responseData.role === "lecture") {

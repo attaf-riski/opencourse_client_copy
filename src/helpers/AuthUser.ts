@@ -1,26 +1,34 @@
+"use server"
+
+import { cookies } from "next/headers";
 import AuthAttributes from "../types/AuthUserInterface";
 
-const GetAuth = (): AuthAttributes | null => {
-    const userString = localStorage.getItem("userData_Apps");
+export const GetAuth = async () => {
+    // const userString = localStorage.getItem("userData_Apps");
 
-    if (userString) {
-        const user: AuthAttributes = JSON.parse(userString);
+    // if (userString) {
+    //     const user: AuthAttributes = JSON.parse(userString);
 
-        return user;
-    }
+    //     return user;
+    // }
 
-    return null;
+    // return null;
+
+    const mycookies = cookies()
+    const user = mycookies.get("userData_Apps")
+    return user;
 };
-const SetAuth = (data: AuthAttributes) => {
+
+export const SetAuth = async (data: AuthAttributes) => {
     const userString = JSON.stringify(data);
-
-    localStorage.setItem("userData_Apps", userString);
+    console.log(userString)
+    const mycookies = cookies()
+    mycookies.set("userData_Apps", userString)
 };
-const RemoveAuth = () => {
+
+export const RemoveAuth = async () => {
     const userString = localStorage.getItem("userData_Apps");
     if (userString) {
         localStorage.removeItem("userData_Apps");
     }
 };
-
-export default { GetAuth, SetAuth, RemoveAuth };

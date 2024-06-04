@@ -1,8 +1,9 @@
-"use client";
+"use server";
 
 import axios from "axios";
 import Http from "../helpers/Fetch";
-import AuthUser from "@/src/helpers/AuthUser";
+import { GetAuth } from "@/src/helpers/AuthUser";
+import { cookies } from "next/headers";
 
 const token = process.env.TOKEN;
 
@@ -105,12 +106,17 @@ export const APIHapusKelas = async (id: any) => {
 
 export const APISemuaKelas = async () => {
   try {
-    const user = AuthUser.GetAuth();
-    console.log(user);
+    const user = GetAuth();
+
+    const mycok = cookies()
+    const mytok = mycok.get("userData_Apps")?.value ?? ""
+    const tok = JSON.parse(mytok)
+    console.log(tok)
+
     const response = await Http.get(
       `api/lecturer/courses/status/check?status=semua`,
       {
-        headers: { Authorization: `Bearer ${user?.token}` },
+        headers: { Authorization: `Bearer ${tok?.token}` },
       }
     );
 
