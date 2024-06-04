@@ -14,11 +14,11 @@ import Link from "next/link";
 import { APIDetailKelas } from "@/src/service/ApiKelas";
 
 type PageDetailKelasProps = {
-  params: { slug: string };
+  params: { id: string };
 };
 
 const PageDetailKelas = async ({ params }: PageDetailKelasProps) => {
-  const id = params.slug[0];
+  const id = params.id[0];
 
   const DataKelas = await APIDetailKelas(id);
 

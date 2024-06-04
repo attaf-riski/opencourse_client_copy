@@ -14,7 +14,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/src/components/ui/tabs";
-import { ListKelas } from "../../../types";
+import { ListKelas } from "../../../../types";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -23,7 +23,7 @@ interface DaftarKelasProps {
 }
 
 const ItemsKelas = ({ kelas }: DaftarKelasProps) => {
-  const [statusKelas, setStatusKelas] = useState("diulas");
+  const [statusKelas, setStatusKelas] = useState("semua");
 
   const FilterKelas = kelas?.filter((item) => {
     if (statusKelas == "semua") return kelas;
@@ -33,12 +33,13 @@ const ItemsKelas = ({ kelas }: DaftarKelasProps) => {
   return (
     <>
       <div>
-        <Tabs defaultValue="diulas" className="">
+        <Tabs defaultValue="semua" className="">
           <TabsList>
-            <TabsTrigger value="diulas" onClick={() => setStatusKelas("diulas")}>Perlu Diulas</TabsTrigger>
-            <TabsTrigger value="published" onClick={() => setStatusKelas("published")}>Public</TabsTrigger>
-            <TabsTrigger value="drafted" onClick={() => setStatusKelas("drafted")}>Draf</TabsTrigger>
             <TabsTrigger value="semua" onClick={() => setStatusKelas("semua")}>Semua</TabsTrigger>
+            <TabsTrigger value="published-admin" onClick={() => setStatusKelas("published-admin")}>Publik</TabsTrigger>
+            <TabsTrigger value="draft" onClick={() => setStatusKelas("draft")}>Draf</TabsTrigger>
+            <TabsTrigger value="published-lecturer" onClick={() => setStatusKelas("published-lecturer")}>Perlu diulas</TabsTrigger>
+            <TabsTrigger value="revision" onClick={() => setStatusKelas("revision")}>Pending</TabsTrigger>
           </TabsList>
 
           <TabsContent
@@ -47,7 +48,7 @@ const ItemsKelas = ({ kelas }: DaftarKelasProps) => {
           >
             {FilterKelas?.map((kelas) => (
               <Card>
-                <Link href={`/dashboard/kelas/${kelas.id}`}>
+                <Link href={`/lecturer/dashboard/kelas/${kelas.id}`}>
                   <CardContent className="h-40 bg-red-200 rounded-t-lg w-full">
                     <p className="bg-white w-fit p-1 relative top-3">
                       {kelas.status}

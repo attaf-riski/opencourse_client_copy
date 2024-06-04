@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/src/components/ui/select";
 import { Textarea } from "@/src/components/ui/textarea";
-import { DataInstrukturKelas, DataKategoriKelas } from "@/src/constants/example";
+import { DataInstrukturKelas  } from "@/src/constants/example";
 import { DipelajariKLS, InstrukturKLS, KategoriKLS, ListKelas, TagKLS } from "@/src/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
@@ -28,6 +28,8 @@ import TambahBab from "./TambahBab";
 import { Button } from "@/src/components/ui/button";
 import { Edit, Trash } from "lucide-react";
 import { toast } from "sonner";
+import {APISemuaKategori} from "@/src/service/ApiKategori";
+import {APISemuaLecturer} from "@/src/service/ApiLecturer";
 
 
 const formSchema = z.object({
@@ -61,10 +63,48 @@ const FormKelas = ({typeBtn, AllValue, oldData, respon, dataBab, addForm} : Form
   const valueForm = useWatch({control})
   // data pada valueForm langsung di lempar di page.tsx saat pengisian data 
 
+  const [categories, setCategories] = useState([]);
+  const [lecturers, setLecturers] = useState([]);
+
   useEffect(() => {
     if (respon) {
       respon(valueForm);
     }
+    const fetchCategories = async () => {
+      try {
+        const response = await APISemuaKategori(); // Call the APISemuaKategori function
+        if (response.error) {
+          console.error('Error fetching categories:', response.message);
+          // Handle error here (e.g., display an error message)
+          return;
+        }
+        const fetchedCategories = response.data; // Assuming "data" contains the category objects
+        setCategories(fetchedCategories);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        // Handle error here (e.g., display an error message)
+      }
+    };
+
+    const fetchLecturers = async () => {
+      try {
+        const response = await APISemuaLecturer(); // Call the APISemuaKategori function
+        if (response.error) {
+          console.error('Error fetching lecturer:', response.message);
+          // Handle error here (e.g., display an error message)
+          return;
+        }
+        const fetchedLecturer = response.data; // Assuming "data" contains the category objects
+        setLecturers(fetchedLecturer);
+      } catch (error) {
+        console.error('Error fetching lecturers:', error);
+        // Handle error here (e.g., display an error message)
+      }
+    };
+
+    fetchCategories();
+    fetchLecturers();
+    console.log(lecturers);
   }, [valueForm, respon]);
 
 
@@ -116,11 +156,12 @@ const FormKelas = ({typeBtn, AllValue, oldData, respon, dataBab, addForm} : Form
   const [pilihanInstruktur, setPilihanInstruktur] = useState<InstrukturKLS[]>([])
 
   useEffect(() => {
-    const hasilCariInstruktur = DataInstrukturKelas.filter((item) =>
-      item.guru.toLowerCase().includes(cariInstruktur.toLowerCase())
+    const hasilCariInstruktur = lecturers.filter((item) =>
+      item.full_name.toLowerCase().includes(cariInstruktur.toLowerCase())
     );
 
     setPilihanInstruktur(hasilCariInstruktur)
+    setCariInstruktur("");
   }, [cariInstruktur])
 
   const [instruktur, setInstruktur] = useState<number[]>([])
@@ -134,8 +175,8 @@ const FormKelas = ({typeBtn, AllValue, oldData, respon, dataBab, addForm} : Form
       setPilihanInstruktur(sisaPilihanInstruktur => sisaPilihanInstruktur.filter(ins => ins.id !== id));
     }
 
-    const yangDitambah = DataInstrukturKelas.find(item => item.id === id);
-    toast.success(`instruktur ${yangDitambah?.guru} ditambahkan`)
+    const yangDitambah = lecturers.find(item => item.id === id);
+    toast.success(`instruktur ${yangDitambah?.full_name} ditambahkan`)
   }
 
   const hapusInstruktur = (event:any, hapus: any) => {
@@ -146,16 +187,16 @@ const FormKelas = ({typeBtn, AllValue, oldData, respon, dataBab, addForm} : Form
     setInstruktur(sisaInstruktur);
 
     // Memeriksa apakah instruktur yang dihapus sudah ada di dalam pilihanInstruktur sebelum menambahkannya kembali
-    const instrukturYangDihapus = DataInstrukturKelas.find(ins => ins.id === idHapus);
+    const instrukturYangDihapus = lecturers.find(ins => ins.id === idHapus);
     if (instrukturYangDihapus && !pilihanInstruktur.some(ins => ins.id === idHapus)) {
       setPilihanInstruktur([...pilihanInstruktur, instrukturYangDihapus]);
     }
 
-    const yangDihapus = DataInstrukturKelas.find(item => item.id === hapus.id);
-    toast.success(`instruktur ${yangDihapus?.guru} dihapus`)
+    const yangDihapus = lecturers.find(item => item.id === hapus.id);
+    toast.success(`instruktur ${yangDihapus?.full_name} dihapus`)
   }
 
-  const instrukturSaya = DataInstrukturKelas.filter(ins => instruktur.includes(ins.id))
+  const instrukturSaya = lecturers.filter(ins => instruktur.includes(ins.id))
 
   
 
@@ -166,8 +207,8 @@ const FormKelas = ({typeBtn, AllValue, oldData, respon, dataBab, addForm} : Form
     // DataKategoriKelas diganti data dari db
 
     useEffect(() => {
-      const hasilPencarian = DataKategoriKelas.filter((item) =>
-        item.kategori.toLowerCase().includes(cariKategori.toLowerCase())
+      const hasilPencarian = categories.filter((item) =>
+        item.category_name.toLowerCase().includes(cariKategori.toLowerCase())
       );
   
       setHasilCariKategori(hasilPencarian);
@@ -274,7 +315,7 @@ const FormKelas = ({typeBtn, AllValue, oldData, respon, dataBab, addForm} : Form
                   {pilihanInstruktur.length > 0 ? (
                     pilihanInstruktur.map((ins) => (
                       <div className="flex justify-between border-2 rounded-md p-4 mb-4" key={ins.id}>
-                        <p>{ins.guru}</p>
+                        <p>{ins.full_name}</p>
                         <button 
                           className="underline text-blue-400" 
                           onClick={(event)=>tambahInstruktur(event, ins?.id)}
@@ -293,9 +334,8 @@ const FormKelas = ({typeBtn, AllValue, oldData, respon, dataBab, addForm} : Form
                       <div className="flex gap-4 items-center hover:bg-slate-50 rounded-lg px-1" key={ins.id}>
                         <div className="h-16 w-16 rounded-full bg-gray-300"></div>
                         <div className="flex-1">
-                          <p className="font-extrabold">{ins.guru}</p>
-                          <p>Doctor of Philosophy (Ph.D), Curtin University, Perth, Australia</p>
-                          <p>Knowledge Management</p>
+                          <p className="font-extrabold">{ins.full_name}</p>
+                          <p>{ins.jabatan ? ins.jabatan : "-"}</p>
                         </div>
                         <button 
                           className="border p-1 rounded-sm hover:bg-red-100"
@@ -331,38 +371,40 @@ const FormKelas = ({typeBtn, AllValue, oldData, respon, dataBab, addForm} : Form
 
                 <div className="p-2">
                   <FormField
-                    control={form.control}
-                    name="duration"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Lama Kelas</FormLabel>
-                        <FormControl>
-                          <Input type="number" placeholder="8 minggu" {...field} defaultValue={oldData ? oldData.duration : 0}/>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                      control={form.control}
+                      name="duration"
+                      render={({field}) => (
+                          <FormItem>
+                            <FormLabel>Lama Kelas</FormLabel>
+                            <FormControl>
+                              <Input type="number" placeholder="8 minggu" {...field}
+                                     defaultValue={oldData ? oldData.duration : 0}/>
+                            </FormControl>
+                            <FormMessage/>
+                          </FormItem>
+                      )}
                   />
                 </div>
 
                 <div className="p-2">
                   <FormField
-                    control={form.control}
-                    name="effort_taken"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Upaya</FormLabel>
-                        <FormControl>
-                          <Input type="number" placeholder="2-4 minggu" {...field}  defaultValue={oldData ? oldData.effort_taken : 0}/>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                      control={form.control}
+                      name="effort_taken"
+                      render={({field}) => (
+                          <FormItem>
+                            <FormLabel>Upaya</FormLabel>
+                            <FormControl>
+                              <Input type="number" placeholder="2-4 minggu" {...field}
+                                     defaultValue={oldData ? oldData.effort_taken : 0}/>
+                            </FormControl>
+                            <FormMessage/>
+                          </FormItem>
+                      )}
                   />
                 </div>
               </div>
 
-              
+
               {/* field Harga */}
               <div>
                 <div className="bg-gray-300">
@@ -371,17 +413,18 @@ const FormKelas = ({typeBtn, AllValue, oldData, respon, dataBab, addForm} : Form
 
                 <div className="p-2">
                   <FormField
-                    control={form.control}
-                    name="price"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Harga</FormLabel>
-                        <FormControl>
-                          <Input type="number" placeholder="200.000" {...field} defaultValue={oldData ? oldData.price : 0} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                      control={form.control}
+                      name="price"
+                      render={({field}) => (
+                          <FormItem>
+                            <FormLabel>Harga</FormLabel>
+                            <FormControl>
+                              <Input type="number" placeholder="200.000" {...field}
+                                     defaultValue={oldData ? oldData.price : 0}/>
+                            </FormControl>
+                            <FormMessage/>
+                          </FormItem>
+                      )}
                   />
                 </div>
               </div>
@@ -394,98 +437,102 @@ const FormKelas = ({typeBtn, AllValue, oldData, respon, dataBab, addForm} : Form
                 </div>
 
                 <div className="p-2">
-                  
+
                   <FormField
-                    control={form.control}
-                    name="language"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Materi</FormLabel>
-                        <FormControl>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={oldData ? oldData.language : field.value}
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Indonesia" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="indonesia">Indonesia</SelectItem>
-                              <SelectItem value="english">English</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                      control={form.control}
+                      name="language"
+                      render={({field}) => (
+                          <FormItem>
+                            <FormLabel>Materi</FormLabel>
+                            <FormControl>
+                              <Select
+                                  onValueChange={field.onChange}
+                                  defaultValue={oldData ? oldData.language : field.value}
+                              >
+                                <SelectTrigger className="w-full">
+                                  <SelectValue placeholder="Indonesia"/>
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="indonesia">Indonesia</SelectItem>
+                                  <SelectItem value="english">English</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                            <FormMessage/>
+                          </FormItem>
+                      )}
                   />
                 </div>
 
                 <div className="p-2">
                   {/* field transkrip bahasa kelas */}
                   <FormField
-                    control={form.control}
-                    name="transkrip_video"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Transkrip Video</FormLabel>
-                        <FormControl>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={oldData ? oldData.language : field.value}
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Indonesia" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="indonesia">Indonesia</SelectItem>
-                              <SelectItem value="english">English</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                      control={form.control}
+                      name="transkrip_video"
+                      render={({field}) => (
+                          <FormItem>
+                            <FormLabel>Transkrip Video</FormLabel>
+                            <FormControl>
+                              <Select
+                                  onValueChange={field.onChange}
+                                  defaultValue={oldData ? oldData.language : field.value}
+                              >
+                                <SelectTrigger className="w-full">
+                                  <SelectValue placeholder="Indonesia"/>
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="indonesia">Indonesia</SelectItem>
+                                  <SelectItem value="english">English</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                            <FormMessage/>
+                          </FormItem>
+                      )}
                   />
                 </div>
               </div>
 
 
               {/* Kategori */}
-              <div>
-                <div className="bg-gray-300">
-                  <h2 className="py-2 pl-2 ">Kategori</h2>
-                </div>
-
-                <div className="p-2 mt-2">
-                  <Input
-                    placeholder="Cari Kategori"
-                    value={cariKategori}
-                    onChange={(e) => setCariKategori(e.target.value)}
-                  />
-                  <div className="mt-4 ml-4 h-20 overflow-y-scroll space-y-2">
-                    <div className="flex gap-2 items-center">
-                      <Checkbox/>
-                      <p className="text-sm">Sejarah</p>
-                    </div>
-                    <div className="flex gap-2 items-center">
-                      <Checkbox/>
-                      <p className="text-sm">Ekonomi</p>
-                    </div>
-                    <div className="flex gap-2 items-center">
-                      <Checkbox/>
-                      <p className="text-sm">Sains</p>
-                    </div>
-                    <div className="flex gap-2 items-center">
-                      <Checkbox/>
-                      <p className="text-sm">Agama</p>
-                    </div>
-                    <div className="flex gap-2 items-center">
-                      <Checkbox/>
-                      <p className="text-sm">Sastra</p>
-                    </div>
-                  </div>
-                </div>
+              <div className="p-2">
+                <FormField
+                    control={form.control}
+                    name="course_category_id" // Name of the field in your form
+                    render={({field}) => (
+                        <FormItem>
+                          <div className="bg-gray-300">
+                            <h2 className="py-2 pl-2 ">Kategori</h2>
+                          </div>
+                          <div className="p-2 mt-2">
+                            <Input
+                                placeholder="Cari Kategori"
+                                value={cariKategori}
+                                onChange={(e) => setCariKategori(e.target.value)}
+                            />
+                            <div className="mt-4 ml-4 h-20 overflow-y-scroll space-y-2">
+                              {/* Loop through the data array */}
+                              {categories.length > 0 ? (
+                                  categories.map((category) => (
+                                      <label key={category.id} className="flex gap-2 items-center">
+                                        <input
+                                            type="radio"
+                                            name="category" // All radio buttons share the same name
+                                            value={category.id}
+                                            onChange={field.onChange} // Update form field on change
+                                        />
+                                        <p className="text-sm">{category.category_name}</p>
+                                      </label>
+                                  ))
+                              ) : (
+                                  <p>Loading categories...</p>
+                              )}
+                            </div>
+                          </div>
+                          <FormMessage/>
+                        </FormItem>
+                    )}
+                />
               </div>
 
 
@@ -497,7 +544,8 @@ const FormKelas = ({typeBtn, AllValue, oldData, respon, dataBab, addForm} : Form
 
                 <div className="p-2">
                   {/* tag container */}
-                  <div className="flex flex-wrap min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                  <div
+                      className="flex flex-wrap min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                   </div>
                 </div>
               </div>

@@ -40,7 +40,7 @@ const ClassCard: React.FC<ClassCardProps> = ({
       <Link href={`/courses/${id}`} legacyBehavior>
         <a>
           <Image
-            // src={`/images/class/${image_cover}`}
+            // src={`http://localhost:8000/${image_cover}`}
             src={"/images/class/class3.png"}
             alt="Class"
             width={400}

@@ -35,33 +35,33 @@ const TambahPage = () => {
 
     setProgressTimer(0);
     showDialog(<Upload />, "Sedang mengupload data...", true);
-
-    const respon = await APIBuatKelas(responForm, e);
-
-    if (respon?.course?.id) {
-      const course_id = respon.course.id;
-
-      const isSuccesAll = await uploadBab(dataAllBab, course_id);
-
-      if (isSuccesAll || respon.course.id) {
-        showDialog(
-          <FileCheck />,
-          `Data kelas ${respon.course.name} berhasil diupload.`
-        );
-        setTimeout(() => {
-          router.push("/dashboard/kelas");
-        }, 4000);
-      }
-    }
-
-    handleApiError(respon);
+    console.log(responForm);
+    // const respon = await APIBuatKelas(responForm, e);
+    //
+    // if (respon?.course?.id) {
+    //   const course_id = respon.course.id;
+    //
+    //   const isSuccesAll = await uploadBab(dataAllBab, course_id);
+    //
+    //   if (isSuccesAll || respon.course.id) {
+    //     showDialog(
+    //       <FileCheck />,
+    //       `Data kelas ${respon.course.name} berhasil diupload.`
+    //     );
+    //     setTimeout(() => {
+    //       router.push("/dashboard/kelas");
+    //     }, 4000);
+    //   }
+    // }
+    //
+    // handleApiError(respon);
   };
 
   // jika saat user tambah dan ingin nambah materi, data akan diupload dan diarahkan ke page edit
   useEffect(() => {
     const handleTambahKelas = async () => {
       if (isAddForm) {
-        const respon = await APIBuatKelas(responForm, "drafted");
+        const respon = await APIBuatKelas(responForm, "draft");
 
         if (respon?.course?.id) {
           const course_id = respon.course.id;
@@ -101,14 +101,14 @@ const TambahPage = () => {
           <div className="flex gap-2">
             <Button
               form={typeButtonForm}
-              onClick={(event) => handleBtnSubmit("drafted", event)}
+              onClick={(event) => handleBtnSubmit("draft", event)}
               variant="outline"
             >
               Simpan Draf
             </Button>
             <Button
               form={typeButtonForm}
-              onClick={(event) => handleBtnSubmit("published", event)}
+              onClick={(event) => handleBtnSubmit("published-lecturer", event)}
               variant="secondary"
             >
               Publikasikan

@@ -1,6 +1,8 @@
-"use server";
+"use client";
 
 import axios from "axios";
+import Http from "../helpers/Fetch";
+import AuthUser from "@/src/helpers/AuthUser";
 
 const token = process.env.TOKEN;
 
@@ -26,7 +28,7 @@ export const APIBuatKelas = async (
 
   try {
     const response = await axios.post(
-      "http://localhost:8000/api/admin/courses",
+      "http://localhost:8000/api/lecturer/courses",
       dataCreateKelas,
       {
         headers: { Authorization: `Bearer ${token}` },
@@ -54,15 +56,11 @@ export const APIEditKelas = async (
     price: formData?.price,
     language: formData?.language,
     image_cover: "default_image_cover",
-    created_by: 40,
-    updated_by: 9,
-    course_category_id: 1,
-    is_superior: true,
   };
 
   try {
     const response = await axios.put(
-      `http://localhost:8000/api/admin/courses/${id}`,
+      `http://localhost:8000/api/lecturer/courses/${id}`,
       dataUpdateKelas,
       {
         headers: { Authorization: `Bearer ${token}` },
@@ -78,7 +76,7 @@ export const APIEditKelas = async (
 export const APIDetailKelas = async (id: any) => {
   try {
     const response = await axios.get(
-      `http://localhost:8000/api/admin/courses/${id}`,
+      `http://localhost:8000/api/lecturer/courses/${id}`,
       {
         headers: { Authorization: `Bearer ${token}` },
       }
@@ -93,7 +91,7 @@ export const APIDetailKelas = async (id: any) => {
 export const APIHapusKelas = async (id: any) => {
   try {
     const response = await axios.delete(
-      `http://localhost:8000/api/admin/courses/${id}`,
+      `http://localhost:8000/api/lecturer/courses/${id}`,
       {
         headers: { Authorization: `Bearer ${token}` },
       }
@@ -107,15 +105,17 @@ export const APIHapusKelas = async (id: any) => {
 
 export const APISemuaKelas = async () => {
   try {
-    const response = await axios.get(
-      `http://localhost:8000/api/admin/courses`,
+    const user = AuthUser.GetAuth();
+    console.log(user);
+    const response = await Http.get(
+      `api/lecturer/courses/status/check?status=semua`,
       {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${user?.token}` },
       }
     );
 
     return response.data;
   } catch (error) {
-    return { error: true, message: "API Tidak Aktif" };
+    return { error: true, message: "API Tidak Aktif"+error };
   }
 };

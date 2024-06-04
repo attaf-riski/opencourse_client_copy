@@ -7,7 +7,7 @@ const token = process.env.TOKEN;
 export const APISemuaKategori = async () => {
   try {
     const response = await axios.get(
-      `http://localhost:8000/api/admin/categories`,
+      `http://localhost:8000/api/lecturer/courses/categories`,
       {
         headers: { Authorization: `Bearer ${token}` },
       }

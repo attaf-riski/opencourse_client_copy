@@ -3,13 +3,13 @@ import { ItemsNav } from "@/../../src/types";
 export const LinkItemsNav: ItemsNav[] = [
   {
     title: "Dashboard",
-    href: "/dashboard",
+    href: "/lecturer/dashboard",
     icon: "💨 ",
     label: "Dashboard",
   },
   {
     title: "Kelas",
-    href: "/dashboard/kelas",
+    href: "/lecturer/dashboard/kelas",
     icon: "🧷 ",
     label: "kelas",
   },

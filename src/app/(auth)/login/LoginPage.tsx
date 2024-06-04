@@ -20,9 +20,13 @@ import {
   FormControl,
   FormMessage,
 } from "@/src/components/ui/form";
+import { useRouter } from "next/navigation";
 import { BiSolidShow, BiSolidHide } from "react-icons/bi";
 import Image from "next/image";
 import axios from "axios";
+import Http from "../../../helpers/Fetch";
+import AuthAttributes from "@/src/types/AuthUserInterface";
+import AuthUser from "@/src/helpers/AuthUser";
 
 // Definisikan skema validasi menggunakan zod
 const loginSchema = z.object({
@@ -31,6 +35,7 @@ const loginSchema = z.object({
 });
 
 export default function LoginCard() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
@@ -46,24 +51,31 @@ export default function LoginCard() {
 
   const onSubmit = async (data) => {
     try {
-      const response = await axios.post(
-        `http://localhost:8000/api/login`,
-        data,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const result = response.data;
-      
-      if (result.success) {
-        // Handle successful login here (e.g., store token, redirect, etc.)
-      } else {
-        // Handle login failure here
+      // email sama password disimpan
+      const response = await Http.post("/api/login", data, {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const responseData: AuthAttributes = {
+        id: response.data?.user?.id,
+        full_name: response.data?.user?.full_name,
+        role: response.data?.user?.role,
+        token: response.data?.token,
+      };
+
+      AuthUser.SetAuth(responseData);
+      if (responseData.role === "admin") {
+        router.push('/');
+      } else if (responseData.role === "lecture") {
+        router.push('/lecturer/dashboard');
+      } else if (responseData.role === "student") {
+        router.push('/');
       }
-    } catch (error) {
-      console.error("Error:", error);
+    } catch (error: any) {
+      console.log(error);
     }
   };
 
